@@ -152,6 +152,9 @@
             },
             failedTurn: function () {
                 var that = this;
+
+                if (this.rolledDice.length == 0 && !this.wormTaken) return true;
+
                 if (!this.hasRolled) return false;
                 return ! _.find(this.rolledDice, function(v) { return that.canTake(v) });
             },
@@ -160,6 +163,9 @@
             },
             gameOver: function () {
                 return this.grill.length == 0;
+            },
+            canRoll: function () {
+                return ! this.hasRolled && this.rolledDice.length > 0;
             }
         }
     });

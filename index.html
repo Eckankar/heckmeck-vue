@@ -108,7 +108,7 @@
                             </div>
                         </div>
 
-                        <button class="btn btn-default" v-if="! hasRolled" @click="roll">
+                        <button class="btn btn-default" v-if="canRoll" @click="roll">
                             Roll
                         </button>
                         <button class="btn btn-default" v-if="canStop" @click="stopTurn">
