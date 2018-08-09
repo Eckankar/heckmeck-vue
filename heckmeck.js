@@ -105,8 +105,12 @@
                     var worm = this.currentPlayer.tiles.shift();
                     this.grill.push(worm);
                     this.grill = _.sortBy(this.grill, function (w) { return w.number; });
+
+                    // Only remove the topmost worm from the grill if it wasn't just returned.
+                    if (this.grill[this.grill.length-1].number !== worm.number) {
+                        this.grill.pop();
+                    }
                 }
-                this.grill.pop();
 
                 this.nextTurn();
             },
