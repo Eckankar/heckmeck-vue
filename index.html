@@ -1,0 +1,165 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.10/lodash.min.js" integrity="sha256-VKITM616rVzV+MI3kZMNUDoY5uTsuSl1ZvEeZhNoJVk=" crossorigin="anonymous"></script>
+
+        <style>
+            .worm-piece {
+                padding: 1em;
+                border: 1px solid gray;
+                width: 100px;
+                text-align: center;
+                display: inline-block;
+            }
+            .grub {
+                min-width: 30px; min-height: 30px;
+                max-width: 30px; max-height: 30px;
+            }
+            .hidden { visibility: hidden }
+            .disabled {
+                opacity: 0.3;
+            }
+        </style>
+
+        <script type="text/x-template" id="die-template">
+            <img :src="'images/die-'+value+'.png'" @click="$emit('click')">
+        </script>
+
+        <script type="text/x-template" id="grubs-template">
+            <span>
+                <img src="images/grub.jpg" v-if="piece.value >= 1" class="grub">
+                <img class="grub hidden" v-else>
+                <img src="images/grub.jpg" v-if="piece.value >= 2" class="grub">
+                <img class="grub hidden" v-else>
+                <img src="images/grub.jpg" v-if="piece.value >= 3" class="grub">
+                <img class="grub hidden" v-else>
+                <img src="images/grub.jpg" v-if="piece.value >= 4" class="grub">
+                <img class="grub hidden" v-else>
+            </span>
+        </script>
+
+        <script type="text/x-template" id="worm-piece-template">
+            <div class="worm-piece">
+                <h3>{{ piece.number }}</h3>
+                <grubs v-bind:piece="piece"></grubs>
+            </div>
+        </script>
+    </head>
+    <body>
+        <nav class="navbar navbar-default">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <span class="navbar-brand">Heckmeck am Bratwurmeck</span>
+                </div>
+                <ul class="nav navbar-nav">
+                    <li><a href="https://www.youtube.com/watch?v=MQnC28rBQCU">Rules</a></li>
+                </ul>
+            </div>
+        </nav>
+        <div id="app" class="container-fluid">
+            <div class="row">
+                <div class="col-md-8">
+                    <div id="input-players" v-if="state == 'input_players'">
+                        <h2>Input player</h2>
+
+                        <div class="input-group">
+                            <input id="playerName" v-model="playerName" class="form-control" @keyup.enter="addPlayer">
+                            <button class="input-group-btn btn" @click="addPlayer">Add player</button>
+                        </div>
+
+                        <div class="btn btn-block btn-primary" v-if="players.length >= 2" @click="startGame">
+                            Start game
+                        </div>
+                    </div>
+                    <div id="game" v-else-if="state == 'game'">
+                        <div class="panel panel-default">
+                            <div class="panel-heading"><h3 class="panel-title">Grill</h3></div>
+                            <div class="panel-body">
+                                <worm-piece v-for="piece in grill" :piece="piece">
+
+                                </worm-piece>
+                            </div>
+                        </div>
+                        <div class="panel panel-default">
+                            <div class="panel-heading"><h3 class="panel-title">Rolled dice</h3></div>
+                            <div class="panel-body">
+                                <die v-for="die in rolledDice" :value="die"
+                                     @click="pickDie(die)"
+                                     :class="{ disabled: ! canTake(die) }"
+                                >
+
+                                </die>
+                            </div>
+                        </div>
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">
+                                    Taken dice (value = {{ currentValue }}; {{ wormTaken ? "" : "no " }} worm taken)
+                                </h3>
+                            </div>
+                            <div class="panel-body">
+                                <die v-for="die in takenDice" :value="die">
+
+                                </die>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-default" v-if="! hasRolled" @click="roll">
+                            Roll
+                        </button>
+                        <button class="btn btn-default" v-if="canStop" @click="stopTurn">
+                            Stop
+                        </button>
+                        <button class="btn btn-default" v-if="failedTurn" @click="failTurn">
+                            Fail
+                        </button>
+                    </div>
+                    <div v-else-if="state == 'game_over'">
+                        <h2>Game over</h2>
+
+                        <div class="panel panel-default" v-for="player in players">
+                            <div class="panel-heading"><h3 class="panel-title">{{ player.name }} ({{ getPoints(player) }} point)</h3></div>
+                            <div class="panel-body">
+                                <worm-piece v-for="piece in player.tiles" :piece="piece">
+
+                                </worm-piece>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-block btn-primary" @click=>
+                            New game
+                        </button>
+                    </div>
+                    <div v-else>
+                        Unknown game state "{{state}}".
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <h2>Players</h2>
+                    <div class="list-group">
+                        <span class="list-group-item" v-for="player in players"
+                              :class="{ active: player.id == activePlayer }"
+                        >
+                            <h4 class="list-group-item-heading">{{ player.name }}</h4>
+                            <p class="list-group-item-text">
+                                <p>Number of pieces: {{ player.tiles.length }}</p>
+                                <p>Topmost piece:
+                                    <span v-if="player.tiles.length > 0">
+                                        {{ player.tiles[0].number }}
+                                        (<grubs :piece="player.tiles[0]"></grubs>)
+                                    </span>
+                                    <span v-else>-</span>
+                                </p>
+                            </p>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src='heckmeck.js'></script>
+    </body>
+</html>
