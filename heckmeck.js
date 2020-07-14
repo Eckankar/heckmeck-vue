@@ -1,4 +1,55 @@
 (function () {
+    function randomBotName() {
+        var prefixes = ["Ch", "K", "M", "Tr", "Sp"];
+        var middles = ["a", "e", "u", "i", "o"];
+        var ends = ["ft", "ht", "ck", "son", "n"];
+
+        return _.sample(prefixes) + _.sample(middles) + _.sample(ends);
+    }
+
+    function dieRoll() {
+         return Math.floor(Math.random() * 6) + 1;
+    }
+
+    var sim_cache = {};
+    const SIM_CNT = 20;
+    function simulateChoices(dice, taken) {
+        var cache_key = _.sortBy(dice).join("_") + "--" + _.sortBy(taken).join("_");
+        if (sim_cache[cache_key]) return sim_cache[cache_key];
+
+        var choices = _.groupBy(dice);
+        var best_die;
+        var best_outcome = 0;
+        var best_failures;
+        _.forEach(choices, function (rolled, die) {
+            if (_.find(taken, function (v) { return die == v })) {
+                // We've already taken this die
+            } else {
+                var new_taken = _.concat(taken, rolled);
+                var remainder = dice.length - rolled.length;
+                var failures = 0;
+
+                var outcome = 0;
+                for (var i = 0; i < SIM_CNT; i++) {
+                    var roll = _.times(remainder, dieRoll);
+
+                    var res = simulateChoices(roll, new_taken);
+                    outcome += ( die == 6 ? 5 : die ) * rolled.length + res.expected;
+                    if (! res.best_die) failures += 1;
+                }
+                outcome /= SIM_CNT;
+                if (outcome > best_outcome) {
+                    best_die = die;
+                    best_outcome = outcome;
+                    best_failures = failures / SIM_CNT;
+                }
+            }
+        });
+
+        sim_cache[cache_key] = { "expected": best_outcome, "best_die": best_die, "failures": best_failures };
+        return sim_cache[cache_key];
+    }
+
     Vue.component('grubs', {
         template: "#grubs-template",
         props: ['piece']
@@ -22,14 +73,23 @@
             takenDice: [],
             playerName: '',
             hasRolled: true,
+            ai_data: {},
         },
         methods: {
             addPlayer: function () {
                 this.players.push( {
                     name: this.playerName,
-                    tiles: []
+                    tiles: [],
+                    type: 'human'
                 } );
                 this.playerName = '';
+            },
+            addAI: function () {
+                this.players.push( {
+                    name: randomBotName(),
+                    tiles: [],
+                    type: 'ai',
+                } );
             },
             resetGame: function () {
                 this.players = _.shuffle(this.players);
@@ -52,8 +112,14 @@
                 this.state = 'input_players';
             },
             newRound: function () {
+                this.ai_data = {};
                 this.takenDice = [];
                 this.roll();
+
+                console.log(this.activePlayer);
+                if (this.currentPlayer.type == 'ai' && ! this.gameOver) {
+                    this.takeAIStep();
+                }
             },
             nextTurn: function () {
                 var that = this;
@@ -69,7 +135,7 @@
             roll: function () {
                 this.rolledDice = [];
                 for (var i = 0; i < 8-this.takenDice.length; i++) {
-                    this.rolledDice.push( Math.floor(Math.random() * 6) + 1 );
+                    this.rolledDice.push( dieRoll() );
                 }
                 this.rolledDice = _.sortBy(this.rolledDice);
                 this.hasRolled = true;
@@ -83,6 +149,10 @@
             },
             canTake: function (v) {
                 return this.hasRolled && ! this.hasTaken(v);
+            },
+            playerPickDie: function (v) {
+                if (! this.playerTurn) return;
+                return this.pickDie(v);
             },
             pickDie: function (v) {
                 if (! this.canTake(v)) return;
@@ -140,7 +210,27 @@
                 }
 
                 return worm;
-            }
+            },
+            takeAIStep: function () {
+                var that = this;
+                var res = simulateChoices(this.rolledDice, this.takenDice);
+                if (res.best_die) {
+                    this.pickDie(res.best_die);
+                    this.roll();
+                    console.log(res.best_die, this.rolledDice, this.takenDice, res.failures);
+                    if (res.failures < 0.5) {
+                        setTimeout(function () { that.takeAIStep(); }, 1000);
+                    } else {
+                        if (this.pickWorm(false)) {
+                            setTimeout(function () { that.stopTurn(); }, 1000);
+                        } else {
+                            setTimeout(function () { that.failTurn(); }, 1000);
+                        }
+                    }
+                } else {
+                    setTimeout(function () { that.failTurn(); }, 1000);
+                }
+            },
         },
         computed: {
             currentValue: function () {
@@ -150,12 +240,14 @@
                 return this.hasTaken(6);
             },
             canStop: function () {
+                if (! this.playerTurn) return false;
                 if (this.hasRolled) return false;
                 if (! this.wormTaken) return false;
                 return this.pickWorm(false);
             },
             failedTurn: function () {
                 var that = this;
+                if (! this.playerTurn) return false;
 
                 if (this.rolledDice.length == 0 && !this.wormTaken) return true;
 
@@ -169,7 +261,10 @@
                 return this.grill.length == 0;
             },
             canRoll: function () {
-                return ! this.hasRolled && this.rolledDice.length > 0;
+                return this.playerTurn && ! this.hasRolled && this.rolledDice.length > 0;
+            },
+            playerTurn: function () {
+                return this.currentPlayer.type == 'human';
             }
         }
     });

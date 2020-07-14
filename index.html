@@ -5,6 +5,7 @@
         <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.10/lodash.min.js" integrity="sha256-VKITM616rVzV+MI3kZMNUDoY5uTsuSl1ZvEeZhNoJVk=" crossorigin="anonymous"></script>
+        <script src="https://kit.fontawesome.com/9828d053b5.js" crossorigin="anonymous"></script>
 
         <style>
             .worm-piece {
@@ -71,6 +72,8 @@
                             <button class="input-group-btn btn" @click="addPlayer">Add player</button>
                         </div>
 
+                        <button class="input-group-btn btn" @click="addAI">Add AI</button>
+
                         <div class="btn btn-block btn-primary" v-if="players.length >= 2" @click="startGame">
                             Start game
                         </div>
@@ -88,7 +91,7 @@
                             <div class="panel-heading"><h3 class="panel-title">Rolled dice</h3></div>
                             <div class="panel-body">
                                 <die v-for="die in rolledDice" :value="die"
-                                     @click="pickDie(die)"
+                                     @click="playerPickDie(die)"
                                      :class="{ disabled: ! canTake(die) }"
                                 >
 
@@ -144,7 +147,7 @@
                         <span class="list-group-item" v-for="player in players"
                               :class="{ active: player.id == activePlayer }"
                         >
-                            <h4 class="list-group-item-heading">{{ player.name }}</h4>
+                            <h4 class="list-group-item-heading">{{ player.name }} <i class="fas fa-robot" v-if="player.type == 'ai'"></i></h4>
                             <p class="list-group-item-text">
                                 <p>Number of pieces: {{ player.tiles.length }}</p>
                                 <p>Topmost piece:
