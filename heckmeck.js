@@ -218,7 +218,7 @@
                     this.pickDie(res.best_die);
                     this.roll();
                     console.log(res.best_die, this.rolledDice, this.takenDice, res.failures);
-                    if (res.failures < 0.5 || ! this.wormTaken()) {
+                    if (res.failures < 0.5 || ! this.wormTaken) {
                         setTimeout(function () { that.takeAIStep(); }, 1000);
                     } else {
                         if (this.pickWorm(false)) {
