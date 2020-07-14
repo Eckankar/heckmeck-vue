@@ -116,9 +116,9 @@
                 this.takenDice = [];
                 this.roll();
 
-                console.log(this.activePlayer);
+                var that = this;
                 if (this.currentPlayer.type == 'ai' && ! this.gameOver) {
-                    this.takeAIStep();
+                    setTimeout(function () { that.takeAIStep(); }, 1000);
                 }
             },
             nextTurn: function () {
