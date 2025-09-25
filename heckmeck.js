@@ -213,22 +213,49 @@
             },
             takeAIStep: function () {
                 var that = this;
-                var res = simulateChoices(this.rolledDice, this.takenDice);
-                if (res.best_die) {
-                    this.pickDie(res.best_die);
-                    this.roll();
-                    console.log(res.best_die, this.rolledDice, this.takenDice, res.failures);
-                    if (res.failures < 0.5 || ! this.wormTaken) {
-                        setTimeout(function () { that.takeAIStep(); }, 1000);
+
+                var stateDict = {
+                    currentPlayerIdx: this.activePlayer,
+                    availableTiles: this.grill.map(t => t.number),
+                    playerTiles: this.players.map(p => p.tiles.map(t => t.number)),
+                    currentRoll: this.rolledDice.slice(),
+                    keptDice: this.takenDice.slice(),
+                    provisionalScore: this.currentValue,
+                    hasRolled: this.hasRolled
+                };
+
+                var aiPicker = getAIPicker();
+                if (!aiPicker) {
+                    console.error('AI model not loaded');
+                    return;
+                }
+
+                var action = aiPicker.selectAction(stateDict, this.players.length);
+
+                if (action >= 0 && action <= 5) {
+                    var dieValue = action + 1;
+                    if (this.rolledDice.includes(dieValue) && this.hasRolled) {
+                        this.pickDie(dieValue);      // sets hasRolled = false
+                        // Do NOT auto-roll here; let AI decide roll vs stop
+                        setTimeout(function () { that.takeAIStep(); }, 600);
                     } else {
-                        if (this.pickWorm(false)) {
-                            setTimeout(function () { that.stopTurn(); }, 1000);
-                        } else {
-                            setTimeout(function () { that.failTurn(); }, 1000);
-                        }
+                        setTimeout(function () { that.failTurn(); }, 600);
+                    }
+                } else if (action === 6) {
+                    if (!this.hasRolled && this.pickWorm(false)) {
+                        setTimeout(function () { that.stopTurn(); }, 600);
+                    } else {
+                        setTimeout(function () { that.failTurn(); }, 600);
+                    }
+                } else if (action === 7) {
+                    if (!this.hasRolled && this.rolledDice.length > 0 && this.takenDice.length > 0) {
+                        this.roll(); // sets hasRolled = true
+                        setTimeout(function () { that.takeAIStep(); }, 600);
+                    } else {
+                        setTimeout(function () { that.failTurn(); }, 600);
                     }
                 } else {
-                    setTimeout(function () { that.failTurn(); }, 1000);
+                    setTimeout(function () { that.failTurn(); }, 600);
                 }
             },
         },
