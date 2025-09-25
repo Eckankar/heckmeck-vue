@@ -1,10 +1,16 @@
 <!DOCTYPE HTML>
 <html>
     <head>
+        <meta charset="utf-8">
+        <title>Henpen</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        
         <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" integrity="sha256-2FMn2Zx6PuH5tdBQDRNwrOo60ts5wWPC9R8jK67b3t4=" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha256-ew8UiV1pJH/YjpOEBInP1HxVvT/SfrCmwSoUzF9JIgc=" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.10/lodash.min.js" integrity="sha256-VKITM616rVzV+MI3kZMNUDoY5uTsuSl1ZvEeZhNoJVk=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.slim.min.js" integrity="sha512-sNylduh9fqpYUK5OYXWcBleGzbZInWj8yCJAU57r1dpSK9tP2ghf/SRYCMj+KsslFkCOt3TvJrX2AV/Gc3wOqA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.9.2/umd/popper.min.js" integrity="sha512-2rNj2KJ+D8s1ceNasTIex6z4HWyOnEYLVC3FigGOmyQCZc2eBXKgOxQmo3oKLHyfcj53uz4QMsRCWNbLd32Q1g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script src="https://kit.fontawesome.com/9828d053b5.js" crossorigin="anonymous"></script>
 
         <style>
@@ -50,17 +56,20 @@
         </script>
     </head>
     <body>
-        <nav class="navbar navbar-default">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <div class="container-fluid">
-                <div class="navbar-header">
-                    <span class="navbar-brand">Henpen</span>
-                </div>
-                <ul class="nav navbar-nav">
-                    <li><a href="#" data-toggle="modal" data-target="#rulesModal">Rules</a></li>
-                    <li><a href="https://github.com/Eckankar/henpen-vue">GitHub</a></li>
+                <span class="navbar-brand">Henpen</span>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#rulesModal">Rules</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="https://github.com/Eckankar/henpen-vue">GitHub</a>
+                    </li>
                 </ul>
             </div>
         </nav>
+
         <div id="app" class="container-fluid">
             <div class="row">
                 <div class="col-md-8">
@@ -69,71 +78,66 @@
 
                         <div class="input-group">
                             <input id="playerName" v-model="playerName" class="form-control" @keyup.enter="addPlayer">
-                            <button class="input-group-btn btn" @click="addPlayer">Add player</button>
+                            <button type="button" class="btn btn-outline-secondary" @click="addPlayer">Add player</button>
                         </div>
 
-                        <button class="input-group-btn btn" @click="addAI">Add AI</button>
+                        <button type="button" class="btn btn-secondary mt-2" @click="addAI">Add AI</button>
 
-                        <div class="btn btn-block btn-primary" v-if="players.length >= 2" @click="startGame">
+                        <div class="btn btn-primary w-100" v-if="players.length >= 2" @click="startGame">
                             Start game
                         </div>
                     </div>
                     <div id="game" v-else-if="state == 'game'">
-                        <div class="panel panel-default">
-                            <div class="panel-heading"><h3 class="panel-title">Grill</h3></div>
-                            <div class="panel-body">
-                                <worm-piece v-for="piece in grill" :piece="piece">
-
-                                </worm-piece>
+                        <!-- panel -> card -->
+                        <div class="card mb-3">
+                            <div class="card-header"><h3 class="card-title m-0">Grill</h3></div>
+                            <div class="card-body">
+                                <worm-piece v-for="piece in grill" :piece="piece"></worm-piece>
                             </div>
                         </div>
-                        <div class="panel panel-default">
-                            <div class="panel-heading"><h3 class="panel-title">Rolled dice</h3></div>
-                            <div class="panel-body">
+
+                        <div class="card mb-3">
+                            <div class="card-header"><h3 class="card-title m-0">Rolled dice</h3></div>
+                            <div class="card-body">
                                 <die v-for="die in rolledDice" :value="die"
                                      @click="playerPickDie(die)"
                                      :class="{ disabled: ! canTake(die) }"
-                                >
-
-                                </die>
+                                ></die>
                             </div>
                         </div>
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                                <h3 class="panel-title">
+
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h3 class="card-title m-0">
                                     Taken dice (value = {{ currentValue }}; {{ wormTaken ? "" : "no " }} worm taken)
                                 </h3>
                             </div>
-                            <div class="panel-body">
-                                <die v-for="die in takenDice" :value="die">
-
-                                </die>
+                            <div class="card-body">
+                                <die v-for="die in takenDice" :value="die"></die>
                             </div>
                         </div>
 
-                        <button class="btn btn-default" v-if="canRoll" @click="roll">
+                        <button class="btn btn-secondary" v-if="canRoll" @click="roll">
                             Roll
                         </button>
-                        <button class="btn btn-default" v-if="canStop" @click="stopTurn">
+                        <button class="btn btn-secondary" v-if="canStop" @click="stopTurn">
                             Stop
                         </button>
-                        <button class="btn btn-default" v-if="failedTurn" @click="failTurn">
+                        <button class="btn btn-secondary" v-if="failedTurn" @click="failTurn">
                             Fail
                         </button>
                     </div>
                     <div v-else-if="state == 'game_over'">
                         <h2>Game over</h2>
 
-                        <div class="panel panel-default" v-for="player in players">
-                            <div class="panel-heading"><h3 class="panel-title">{{ player.name }} ({{ getPoints(player) }} point)</h3></div>
-                            <div class="panel-body">
-                                <worm-piece v-for="piece in player.tiles" :piece="piece">
-
-                                </worm-piece>
+                        <div class="card mb-3" v-for="player in players">
+                            <div class="card-header"><h3 class="card-title m-0">{{ player.name }} ({{ getPoints(player) }} point)</h3></div>
+                            <div class="card-body">
+                                <worm-piece v-for="piece in player.tiles" :piece="piece"></worm-piece>
                             </div>
                         </div>
 
-                        <button class="btn btn-block btn-primary" @click="startAgain">
+                        <button class="btn btn-primary w-100" @click="startAgain">
                             New game
                         </button>
                     </div>
@@ -165,13 +169,11 @@
         </div>
 
         <div class="modal fade" id="rulesModal" tabindex="-1" role="dialog" aria-labelledby="rulesModalLabel" aria-hidden="true">
-            <div class="modal-dialog" role="document">
+            <div class="modal-dialog modal-lg" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="rulesModalLabel">Henpen Rules</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <h1>Henpen – Rules</h1>
@@ -188,10 +190,11 @@
                             <li><strong>Choose one symbol</strong> from your roll that you haven’t yet taken this turn.</li>
                             <li>Set aside <em>all</em> dice showing that symbol.</li>
                             <li>Add its value to your running total (worms count as 5 points each).</li>
-                            <li>You may roll the remaining dice again—<em>but only if you haven’t used that symbol before this turn</em>.</li>
+                            <li>You may roll the remaining dice again - but beware:</li>
+                            <li>If you do choose to roll, and you're unable to use any of the new dice, you go bust and end your turn without scoring.</li>
                         </ul>
 
-                        <p>You may stop rolling at any time—but only if your total includes <strong>at least one worm</strong> and matches the value of a <em>visible</em> serving (either on the grill or on top of another player’s stack).</p>
+                        <p>You may stop rolling at any time—but only if your total includes <strong>at least one worm</strong> and matches the value of a <em>visible</em> serving on the grill or the top of another player's stack.</p>
 
                         <h2>Claiming Servings</h2>
                         <ul>
@@ -208,7 +211,7 @@
                             <li>Your total doesn’t match any visible serving.</li>
                         </ul>
 
-                        <p>If you fail and have at least one serving in your stack, you must return your <em>topmost</em> serving to the grill. Then, flip the <strong>highest-numbered serving still on the grill</strong> face-down—removing it from play for the rest of the game. (Exception: if the returned serving is already the highest on the grill, it stays face-up and nothing is flipped.)</p>
+                        <p>If you fail and have at least one serving in your stack, you must return your <em>topmost</em> serving to the grill. Then, the highest-numbered serving still on the grill is removed from play.</p>
 
                         <h2>End of Game</h2>
                         <p>The game ends when no face-up servings remain on the grill.</p>
