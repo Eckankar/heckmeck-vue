@@ -1,7 +1,5 @@
-# Heckmeck am Bratwurmeck
+# Henpen
 
-An implementation of the dice game "Heckmeck am Bratwurmeck" (aka Pickomino) in Vue.js.
+A Vue.js implementation of a popular dice game about collecting worms.
 
-The rules can be found [here](https://www.youtube.com/watch?v=d9BPRgDM0n0).
-
-Playable version available at http://heckmeck.brohr.dk .
+Playable version available at https://henpen.brohr.dk .

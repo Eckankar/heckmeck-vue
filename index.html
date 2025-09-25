@@ -53,11 +53,11 @@
         <nav class="navbar navbar-default">
             <div class="container-fluid">
                 <div class="navbar-header">
-                    <span class="navbar-brand">Heckmeck am Bratwurmeck</span>
+                    <span class="navbar-brand">Henpen</span>
                 </div>
                 <ul class="nav navbar-nav">
-                    <li><a href="https://www.youtube.com/watch?v=d9BPRgDM0n0">Rules</a></li>
-                    <li><a href="https://github.com/Eckankar/heckmeck-vue">GitHub</a></li>
+                    <li><a href="#" data-toggle="modal" data-target="#rulesModal">Rules</a></li>
+                    <li><a href="https://github.com/Eckankar/henpen-vue">GitHub</a></li>
                 </ul>
             </div>
         </nav>
@@ -164,7 +164,62 @@
             </div>
         </div>
 
+        <div class="modal fade" id="rulesModal" tabindex="-1" role="dialog" aria-labelledby="rulesModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="rulesModalLabel">Henpen Rules</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <h1>Henpen – Rules</h1>
+
+                        <p><strong>Premise:</strong> In Henpen, players take turns rolling dice to collect roasted worms—everyone’s favorite poultry snack! The goal is to gather the most worms by the end of the game.</p>
+
+                        <h2>Game Layout</h2>
+                        <p>At the center of the table lies the <em>grill</em>: 16 face-up worm <strong>servings</strong>, numbered 21 through 36. Each serving shows a point value and displays one or more worms (each worm is worth 1 point). Players build personal stacks of servings, but only the <em>topmost</em> serving in each stack is visible and vulnerable to theft.</p>
+
+                        <h2>Gameplay</h2>
+                        <p>On your turn, roll all 8 dice. Each die shows a number (1–5) or a worm symbol.</p>
+
+                        <ul>
+                            <li><strong>Choose one symbol</strong> from your roll that you haven’t yet taken this turn.</li>
+                            <li>Set aside <em>all</em> dice showing that symbol.</li>
+                            <li>Add its value to your running total (worms count as 5 points each).</li>
+                            <li>You may roll the remaining dice again—<em>but only if you haven’t used that symbol before this turn</em>.</li>
+                        </ul>
+
+                        <p>You may stop rolling at any time—but only if your total includes <strong>at least one worm</strong> and matches the value of a <em>visible</em> serving (either on the grill or on top of another player’s stack).</p>
+
+                        <h2>Claiming Servings</h2>
+                        <ul>
+                            <li>If your total matches a serving on the <strong>grill</strong>, take it and place it face-up on your stack.</li>
+                            <li>If it matches a visible serving on <strong>another player’s stack</strong>, you may steal it instead.</li>
+                            <li>If your total matches your <em>own</em> visible serving (or a missing number on the grill), take the <strong>highest available serving on the grill with a lower value</strong>.</li>
+                        </ul>
+
+                        <h2>Failed Turns</h2>
+                        <p>Your turn fails if any of these happen:</p>
+                        <ul>
+                            <li>You roll only symbols you’ve already taken this turn.</li>
+                            <li>You end your turn with no worms in your total.</li>
+                            <li>Your total doesn’t match any visible serving.</li>
+                        </ul>
+
+                        <p>If you fail and have at least one serving in your stack, you must return your <em>topmost</em> serving to the grill. Then, flip the <strong>highest-numbered serving still on the grill</strong> face-down—removing it from play for the rest of the game. (Exception: if the returned serving is already the highest on the grill, it stays face-up and nothing is flipped.)</p>
+
+                        <h2>End of Game</h2>
+                        <p>The game ends when no face-up servings remain on the grill.</p>
+                        <p>Each player counts the total worms on all their servings. The player with the <strong>most worms wins</strong>. If tied, the player with the <strong>single highest-numbered serving</strong> wins.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
         <script src='ai-player.js'></script>
-        <script src='heckmeck.js'></script>
+        <script src='henpen.js'></script>
     </body>
 </html>
